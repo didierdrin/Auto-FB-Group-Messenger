@@ -174,14 +174,6 @@ class FacebookGroupMessenger:
                 continue
         return None
     
-    # def _keep_input_focused(self, input_element):
-    #     """Helper to maintain focus on input element"""
-    #     try:
-    #         self.driver.execute_script("arguments[0].focus();", input_element)
-    #         input_element.click()
-    #         return True
-    #     except:
-    #         return False
 
     def _keep_input_focused(self, input_element):
         """Enhanced helper to maintain focus on input element"""
@@ -216,35 +208,6 @@ class FacebookGroupMessenger:
             # Create complete message for tracking cursor position
             complete_message = greeting + "\n" + body_message
             current_pos = 0
-            
-            # Type greeting character by character with enhanced focus management
-            for char in greeting:
-                # Re-check focus every few characters
-                if current_pos % 5 == 0:
-                    self._keep_input_focused(msg_input)
-                
-                # Use JavaScript to insert character at current position
-                self.driver.execute_script("""
-                    var el = arguments[0];
-                    el.focus();
-                    var sel = window.getSelection();
-                    var range = document.createRange();
-                    range.selectNodeContents(el);
-                    range.collapse(false);
-                    sel.removeAllRanges();
-                    sel.addRange(range);
-                    document.execCommand('insertText', false, arguments[1]);
-                """, msg_input, char)
-                
-                current_pos += 1
-                
-                # Base delay of 100ms (75 WPM) with variability
-                if char in '.!?,;:':
-                    time.sleep(random.uniform(0.15, 0.3))
-                elif char == ' ':
-                    time.sleep(random.uniform(0.08, 0.15))
-                else:
-                    time.sleep(random.uniform(0.05, 0.15))
             
             # Insert new line with JavaScript
             self._keep_input_focused(msg_input)
@@ -341,12 +304,10 @@ class FacebookGroupMessenger:
         except Exception as e:
             print(f"Error in send_message: {str(e)}")
             return False
-
-    # Make sure to add this import if you don't already have it:
-    # from selenium.webdriver.common.action_chains import ActionChains
     
-  
-    def send_messages_to_new_members(self, group_url, max_members=200):
+
+
+    def send_messages_to_new_members(self, group_url, max_members=1000):
         """Send messages to new members of the group by targeting 'ago' text"""
         # Setup and initialization
         group_name = self.extract_group_name(group_url)
@@ -535,6 +496,32 @@ class FacebookGroupMessenger:
                             message_btn.click()
                             time.sleep(2)
 
+
+                            # Check previous messages to avoid duplicates
+                            try:
+                                time.sleep(2)  # Let messages load
+                                messages = self.driver.find_elements(By.XPATH, "//div[contains(@class, 'x1yc453h') and contains(text(), '')]")  # Adjust the class or tag as needed
+                                message_found = False
+                                for msg in messages:
+                                    if "gig in the freelancers group" in msg.text.lower():
+                                        print("Already messaged this member. Skipping...")
+                                        members_skipped += 1
+                                        # Close chat and skip
+                                        try:
+                                            close_btn = self.driver.find_element(By.XPATH, "//div[@aria-label='Close chat']")
+                                            close_btn.click()
+                                        except:
+                                            ActionChains(self.driver).send_keys(Keys.ESCAPE).perform()
+                                        self.driver.back()
+                                        time.sleep(2)
+                                        raise Exception("Duplicate message found")
+                            except Exception as e:
+                                if "Duplicate message found" not in str(e):
+                                    print(f"Error checking previous messages: {e}")
+                                continue
+
+                            
+
                             # Send messages using the improved method
                             try:
                                 self.send_message(greeting, body_message)
@@ -606,11 +593,11 @@ class FacebookGroupMessenger:
 
 if __name__ == "__main__":
     # Replace with your Facebook credentials
-    email = "431"
-    password = "****"
+    email = "4313738873"
+    password = "nse146DIDI2023!"
     
     # Example group URL
-    group_url = "https://web.facebook.com/groups/665324318310939"
+    group_url = "https://web.facebook.com/groups/665324318310939" #"https://web.facebook.com/groups/ineedavideoeditor"
 
     # Initialize and run the messenger
     try:
