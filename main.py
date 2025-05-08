@@ -11,6 +11,8 @@ from webdriver_manager.microsoft import EdgeChromiumDriverManager
 from selenium.common.exceptions import TimeoutException, NoSuchElementException, StaleElementReferenceException
 from selenium.webdriver.common.action_chains import ActionChains
 import random
+import os
+from dotenv import load_dotenv
 
 # Add at the beginning of your script
 def random_delay(min_seconds=1, max_seconds=3):
@@ -593,8 +595,11 @@ class FacebookGroupMessenger:
 
 if __name__ == "__main__":
     # Replace with your Facebook credentials
-    email = "4313738873"
-    password = "nse146DIDI2023!"
+    # Load .env variables
+    load_dotenv()
+
+    email = os.getenv("EMAIL")
+    password = os.getenv("PASSWORD")
     
     # Example group URL
     group_url = "https://web.facebook.com/groups/665324318310939" #"https://web.facebook.com/groups/ineedavideoeditor"
